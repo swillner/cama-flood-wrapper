@@ -1,0 +1,6 @@
+[submodule "cmake"]
+	path = cmake
+	url = git@github.com:swillner/cmake-modules
+[submodule "lib/settingsnode"]
+	path = lib/settingsnode
+	url = git@github.com:swillner/settingsnode
