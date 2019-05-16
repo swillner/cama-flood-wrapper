@@ -6,8 +6,7 @@ include(cmake/libraries.cmake)
 
 set_default_build_type(Release)
 
-enable_language(Fortran)
-project(cama_flood)
+project(cama_flood Fortran)
 
 add_executable(cama_flood
   cama-flood/lib/endian4.F
@@ -71,7 +70,9 @@ patch_file(cama-flood/mod/mod_input.F patches/mod_input.patch)
 #target_include_directories(cama_flood PRIVATE include lib/lmoments/include lib/cpp-library)
 #target_compile_options(cama_flood PRIVATE -std=c++11)
 target_compile_options(cama_flood PRIVATE -cpp)
-# TODO  -convert little_endian -assume byterecl -heap-arrays
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+  target_compile_options(cama_flood PRIVATE -convert little_endian -assume byterecl -heap-arrays)
+endif()
 set_target_properties(cama_flood PROPERTIES Fortran_FORMAT FREE)
 
 #set_advanced_cpp_warnings(cama_flood)
@@ -89,7 +90,7 @@ if(WITH_NETCDF)
   target_compile_definitions(cama_flood PRIVATE UseCDF)
 endif()
 
-option(WITH_ENDIAN_CONVERSION "" ON)
+option(WITH_ENDIAN_CONVERSION "" OFF)
 if(WITH_ENDIAN_CONVERSION)
   target_compile_definitions(cama_flood PRIVATE ConvEnd)
 endif()
