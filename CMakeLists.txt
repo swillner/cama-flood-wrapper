@@ -15,11 +15,13 @@ add_executable(cama_flood
   cama-flood/lib/lib_dates.F
   cama-flood/lib/lib_netcdf_util.F
   cama-flood/mod/mod_diag.F
+  cama-flood/mod/mod_input.F
   cama-flood/mod/mod_map.F
   cama-flood/mod/mod_output.F
   cama-flood/mod/mod_prog.F
   cama-flood/mod/mod_time.F
   cama-flood/mod/parkind1.F
+  cama-flood/src/MAIN_day.F
   cama-flood/src/calc_damout.F
   cama-flood/src/calc_fldout.F
   cama-flood/src/calc_fldstg.F
@@ -30,6 +32,7 @@ add_executable(cama_flood
   cama-flood/src/calc_stonxt.F
   cama-flood/src/calc_watbal.F
   cama-flood/src/control0.F
+  cama-flood/src/control_inp.F
   cama-flood/src/control_out.F
   cama-flood/src/control_phy.F
   cama-flood/src/control_rest.F
@@ -37,10 +40,10 @@ add_executable(cama_flood
   cama-flood/src/create_outbin.F
   cama-flood/src/create_outcdf.F
   cama-flood/src/init_cond.F
+  cama-flood/src/init_inputnam.F
   cama-flood/src/init_map.F
   cama-flood/src/init_time.F
   cama-flood/src/init_topo.F
-  cama-flood/src/MAIN_day.F
   )
 
 find_package(Patch REQUIRED)
@@ -63,9 +66,6 @@ function(patch_file FILENAME PATCH)
   target_sources(cama_flood PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
 endfunction()
 
-patch_file(cama-flood/src/control_inp.F patches/control_inp.patch)
-patch_file(cama-flood/src/init_inputnam.F patches/init_inputnam.patch)
-patch_file(cama-flood/mod/mod_input.F patches/mod_input.patch)
 
 #target_include_directories(cama_flood PRIVATE include lib/lmoments/include lib/cpp-library)
 #target_compile_options(cama_flood PRIVATE -std=c++11)
