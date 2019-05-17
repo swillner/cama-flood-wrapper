@@ -6,9 +6,10 @@ include(cmake/libraries.cmake)
 
 set_default_build_type(Release)
 
-project(cama_flood Fortran)
+enable_language(Fortran)
+project(camaflood)
 
-add_executable(cama_flood
+add_library(libcamaflood
   cama-flood/lib/endian4.F
   cama-flood/lib/igetday.F
   cama-flood/lib/len_trim.F
@@ -21,7 +22,6 @@ add_executable(cama_flood
   cama-flood/mod/mod_prog.F
   cama-flood/mod/mod_time.F
   cama-flood/mod/parkind1.F
-  cama-flood/src/MAIN_day.F
   cama-flood/src/calc_damout.F
   cama-flood/src/calc_fldout.F
   cama-flood/src/calc_fldstg.F
@@ -31,7 +31,6 @@ add_executable(cama_flood
   cama-flood/src/calc_rivout_kine.F
   cama-flood/src/calc_stonxt.F
   cama-flood/src/calc_watbal.F
-  cama-flood/src/control0.F
   cama-flood/src/control_inp.F
   cama-flood/src/control_out.F
   cama-flood/src/control_phy.F
@@ -44,40 +43,27 @@ add_executable(cama_flood
   cama-flood/src/init_map.F
   cama-flood/src/init_time.F
   cama-flood/src/init_topo.F
+  src/additional.f90
   )
 
-find_package(Patch REQUIRED)
-message(STATUS "Patch found: ${Patch_EXECUTABLE}")
+add_executable(camaflood
+  src/main.cpp
+  )
 
-function(patch_file FILENAME PATCH)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
-  execute_process(
-    COMMAND ${Patch_EXECUTABLE} ${FILENAME} ${PATCH} -o ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    OUTPUT_VARIABLE OUTPUT_PATCH
-    RESULT_VARIABLE RESULT_PATCH
-    )
-  string(STRIP "${OUTPUT_PATCH}" OUTPUT_PATCH)
-  message(STATUS ${OUTPUT_PATCH})
-  if(NOT "${RESULT_PATCH}" EQUAL "0")
-    message(FATAL_ERROR "Patching failed: ${RESULT_PATCH}")
-  endif()
-  set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} PROPERTIES GENERATED TRUE)
-  target_sources(cama_flood PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
-endfunction()
-
+target_link_libraries(camaflood PRIVATE libcamaflood)
 
 #target_include_directories(cama_flood PRIVATE include lib/lmoments/include lib/cpp-library)
-#target_compile_options(cama_flood PRIVATE -std=c++11)
-target_compile_options(cama_flood PRIVATE -cpp)
+target_compile_options(camaflood PRIVATE -std=c++11)
+target_compile_options(libcamaflood PRIVATE -cpp)
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  target_compile_options(cama_flood PRIVATE -convert little_endian -assume byterecl -heap-arrays)
+  target_compile_options(libcamaflood PRIVATE -convert little_endian -assume byterecl -heap-arrays)
 endif()
-set_target_properties(cama_flood PROPERTIES Fortran_FORMAT FREE)
+set_target_properties(libcamaflood PROPERTIES Fortran_FORMAT FREE)
 
-#set_advanced_cpp_warnings(cama_flood)
-set_build_type_specifics(cama_flood)
-#add_git_version(cama_flood
+set_advanced_cpp_warnings(camaflood)
+set_build_type_specifics(camaflood)
+set_build_type_specifics(libcamaflood)
+#add_git_version(camaflood
 #  FALLBACK_VERSION 1.0.0)
 
 option(WITH_NETCDF "" ON)
@@ -86,13 +72,13 @@ if(WITH_NETCDF)
   message(STATUS "NetCDF Fortran include directory: ${NETCDF_FORTRAN_INCLUDE_DIR}")
   message(STATUS "NetCDF Fortran library: ${NETCDF_FORTRAN_LIBRARY}")
   include_directories(${NETCDF_FORTRAN_INCLUDE_DIR})
-  target_link_libraries(cama_flood PRIVATE netcdff)
-  target_compile_definitions(cama_flood PRIVATE UseCDF)
+  target_link_libraries(libcamaflood PRIVATE netcdff)
+  target_compile_definitions(libcamaflood PRIVATE UseCDF)
 endif()
 
 option(WITH_ENDIAN_CONVERSION "" OFF)
 if(WITH_ENDIAN_CONVERSION)
-  target_compile_definitions(cama_flood PRIVATE ConvEnd)
+  target_compile_definitions(libcamaflood PRIVATE ConvEnd)
 endif()
 
 # TODO UseMPI
@@ -102,10 +88,10 @@ if(PARALLELIZATION)
   find_package(OpenMP REQUIRED)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  set(CMAKE_FFLAGS "${CMAKE_FFLAGS} ${OpenMP_FFLAGS}")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
 endif()
 
 #include(lib/settingsnode/settingsnode.cmake)
 #include_settingsnode(cama_flood)
 
-#add_cpp_tools(cama_flood)
+add_cpp_tools(camaflood)
