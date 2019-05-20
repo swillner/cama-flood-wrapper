@@ -21,12 +21,12 @@ int main() {
   init_cond_mod_mp_init_cond_();
   init_time_mod_mp_init_time_();
   control_tstp_mod_mp_control_tstp_();
-  additional_mod_mp_cleanup_tstp_();
-  additional_mod_mp_restart_init_();
-  additional_mod_mp_ifirstin_ = 0;
-  mod_input_mp_irestart_ = 1;
-  init_cond_mod_mp_init_cond_();
-  init_time_mod_mp_init_time_();
-  control_tstp_mod_mp_control_tstp_();
+  for (int i = 0; i < 4; ++i) {
+      additional_mod_mp_cleanup_tstp_();
+      additional_mod_mp_restart_init_();
+      additional_mod_mp_ifirstin_ = 0;
+      init_time_mod_mp_init_time_();
+      control_tstp_mod_mp_control_tstp_();
+  }
   return 0;
 }

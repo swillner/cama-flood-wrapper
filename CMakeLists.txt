@@ -34,7 +34,6 @@ add_library(libcamaflood
   cama-flood/src/control_inp.F
   cama-flood/src/control_out.F
   cama-flood/src/control_rest.F
-  cama-flood/src/control_tstp.F
   cama-flood/src/create_outbin.F
   cama-flood/src/create_outcdf.F
   cama-flood/src/init_cond.F
@@ -66,6 +65,7 @@ function(patch_file FILENAME PATCH)
 endfunction()
 
 patch_file(cama-flood/src/control_phy.F patches/control_phy.patch)
+patch_file(cama-flood/src/control_tstp.F patches/control_tstp.patch)
 
 add_executable(camaflood
   src/main.cpp

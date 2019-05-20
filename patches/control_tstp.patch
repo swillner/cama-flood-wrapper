@@ -1,0 +1,9 @@
+@@ -74,7 +74,7 @@ DO ISTEP=1,NSTEPS
+                    
+   !  ===============================
+   !  5. WRTE_RESTART
+-  CALL CONTROL_REST(ISTEP,IYYYY,IMM,IDD)
++  ! CALL CONTROL_REST(ISTEP,IYYYY,IMM,IDD)
+ !  ! ============================================
+ !  !  6. UPDATE PROGNOSTICS T+1 > T 
+ !  D2RIVSTO_IN(:,:)=D2RIVSTO_OUT(:,:)
