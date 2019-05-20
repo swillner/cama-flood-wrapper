@@ -33,7 +33,6 @@ add_library(libcamaflood
   cama-flood/src/calc_watbal.F
   cama-flood/src/control_inp.F
   cama-flood/src/control_out.F
-  cama-flood/src/control_phy.F
   cama-flood/src/control_rest.F
   cama-flood/src/control_tstp.F
   cama-flood/src/create_outbin.F
@@ -45,6 +44,28 @@ add_library(libcamaflood
   cama-flood/src/init_topo.F
   src/additional.f90
   )
+
+find_package(Patch REQUIRED)
+message(STATUS "Patch found: ${Patch_EXECUTABLE}")
+
+function(patch_file FILENAME PATCH)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
+  execute_process(
+    COMMAND ${Patch_EXECUTABLE} ${FILENAME} ${PATCH} -o ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUTPUT_VARIABLE OUTPUT_PATCH
+    RESULT_VARIABLE RESULT_PATCH
+    )
+  string(STRIP "${OUTPUT_PATCH}" OUTPUT_PATCH)
+  message(STATUS ${OUTPUT_PATCH})
+  if(NOT "${RESULT_PATCH}" EQUAL "0")
+    message(FATAL_ERROR "Patching failed: ${RESULT_PATCH}")
+  endif()
+  set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} PROPERTIES GENERATED TRUE)
+  target_sources(libcamaflood PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
+endfunction()
+
+patch_file(cama-flood/src/control_phy.F patches/control_phy.patch)
 
 add_executable(camaflood
   src/main.cpp
