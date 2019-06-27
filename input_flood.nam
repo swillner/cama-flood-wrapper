@@ -1,0 +1,67 @@
+&NRUNVER
+IRESTART=1                  ! 1=> restart;  2=>spinup
+CRESTDIR="./"                       ! restart directory
+CRESTSTO="restart19720101_1.nc"                ! restart file
+LRESTCDF=.True.                     ! .True. restart is netcdf 
+RESTFREQ=0                          ! restart frequency: 1== days at 00, 0 == last step of simulation  
+/
+&NSIMTIME
+ISYEAR=1971                      ! start year
+ISMON=1                        ! month 
+ISDAY=1                        ! day  (assumed at 00UTC)
+IEYEAR=1972                      ! end year
+IEMON=1                        ! end month 
+IEDAY=1                        ! end day     (assumed at 00UTC )
+/
+&NMAP
+CRIVCLINC="/p/projects/isimip/isimip/CaMa-Flood/CaMa-Flood_20140428/Cama_flood_params/rivclim_0.25_20131119.nc"  ! climate fields / static 
+CRIVPARNC="/p/projects/isimip/isimip/CaMa-Flood/CaMa-Flood_20140428/Cama_flood_params/rivpar_0.25_20131119.nc"   ! river parameters 
+LMAPCDF=.TRUE.
+/
+&NINPUT
+CROFCDFVAR="qtot"
+LINPCDF=.TRUE.
+LINTERP=.TRUE.                       ! TRUE for runoff interpolation with input matrix
+LINTERPCDF=.FALSE.                   ! TRUE for runoff interpolation with input matrix in NETCDF
+CINPMAT="/p/tmp/willner/camatest/CaMa-Flood_v3.6.2_20140909/inpmat-tmp.bin"                ! input matrix file 
+!!LINTERPCDF=.TRUE.                   ! TRUE for runoff interpolation with input matrix in NETCDF
+!!CINPMAT="/p/projects/isimip/isimip/CaMa-Flood/CaMa-Flood_20140428/Cama_flood_params/inpmat_05To025.nc"                ! input matrix file 
+CRUNOFFCDF="/p/projects/expact/CaMa/CaMa_out_21/WaterGAP_gswp3/runoff_files/watergap_gswp3_hist_nosoc_co2_qtot_global_daily_1971.nc4"          ! input netcdf file with runoff 
+SYEARIN=1971                        ! start year of runoff in netcdf
+SMONIN=1                            ! start month of runoff in netcdf
+SDAYIN=1                            ! start day of runoff in netcdf
+/
+&NOUTPUT
+CRIVOUTDIR="./"          ! river discharge [m3/s]
+CRIVSTODIR="NONE"          ! river storage   [m3]
+CRIVVELDIR="NONE"          ! flow velocity [m/s]
+CRIVDPHDIR="NONE"          ! river water depth [m]
+CFLDOUTDIR="./"          ! floodplain discharge [m3/s]
+CFLDSTODIR="./"          ! floodplain storage [m3]
+CFLDDPHDIR="./"          ! floodplain water depth [m]
+CFLDFRCDIR="./"          ! flood fraction [m2/m2]
+CFLDAREDIR="./"          ! flood area     [m2]
+CSFCELVDIR="NONE"          ! water surface elevation [m]
+COUTFLWDIR="NONE"          ! total outflow (rivout+fldout) [m3/s]
+CSTORGEDIR="NONE"          ! total storage (rivsto+fldsto) [m3]
+LOUTVEC=.FALSE.                     ! True for vectorial output, False - lat/lon
+LOUTCDF=.TRUE.                      ! True for netcdf output 
+/
+&NCONF
+NX=1440                              ! Nx of cama flood 
+NY=720                              ! Nx of cama flood 
+NLFP=10                             ! N of flood plain levels 
+DT=86400                              ! time step [sec]
+NXIN=720                          ! Input runoff NX
+NYIN=360                           ! input runiff NY
+INPN=16                            ! number of "link" in forcing interpolation maxtrix
+DTIN=86400                          ! input runoff time step [sec]
+LADPSTP=.TRUE.                    ! TRUE for adaptive time step
+LFLDOUT=.TRUE.                    ! TRUE for floodplain flow
+/
+&NPARAM
+PCADP=1.0                           ! "ALPHA" of Adaptive Time Step CFL
+PMANRIV=0.03                        ! Manning Roughness (river)
+PMANFLD=0.10                        ! Manning Roughness (floodplain)
+PDSTMTH=10000.                      ! Downstream distance at river mouth
+/

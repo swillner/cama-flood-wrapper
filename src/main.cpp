@@ -13,6 +13,7 @@
 #pragma GCC diagnostic pop
 
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <memory>
 #include <stdexcept>
@@ -34,7 +35,7 @@ void FC_calc_fldstg_calc_fldstg();
 void FC_additional_mod_cleanup_tstp();
 void FC_additional_mod_restart_init();
 extern int FC_additional_mod_ifirstin;
-extern char* FC_mod_input_crunoffcdf;
+extern char FC_mod_input_crunoffcdf[256];
 extern int FC_mod_input_irestart;
 extern int FC_mod_input_isyear;   // start year
 extern int FC_mod_input_ismon;    // start month
@@ -55,7 +56,7 @@ void run(const settings::SettingsNode& settings) {
     FC_init_inputnam_mod_init_inputnam();
 
     const auto runoff_filename = settings["input"]["file"].as<std::string>();
-    std::copy(std::begin(runoff_filename), std::end(runoff_filename), FC_mod_input_crunoffcdf);
+    std::strncpy(FC_mod_input_crunoffcdf, runoff_filename.c_str(), 255);
 
     netCDF::NcFile runoff_file;
     try {
@@ -123,13 +124,11 @@ void run(const settings::SettingsNode& settings) {
     }
     spinup_bar.close();
 
-    // TODO test if camaflood allows changing years number after running for the first time
-    FC_mod_input_ieyear = year + years_count;  // end FC_year
-
     FC_additional_mod_cleanup_tstp();
     FC_additional_mod_restart_init();
     FC_additional_mod_ifirstin = 0;
     FC_init_time_mod_init_time();
+    FC_mod_input_ieyear = year + years_count;  // end FC_year
     FC_control_tstp_mod_control_tstp();
 }
 

@@ -1,0 +1,5 @@
+verbose: false
+input:
+  file: /home/sven/lpjml_gswp3_hist_nosoc_co2_qtot_global_daily_1901_1910.nc4
+  variable: qtot
+spinup: 4
