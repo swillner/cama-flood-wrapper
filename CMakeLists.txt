@@ -67,13 +67,42 @@ endfunction()
 patch_file(cama-flood/src/control_phy.F patches/control_phy.patch)
 patch_file(cama-flood/src/control_tstp.F patches/control_tstp.patch)
 
+include(FortranCInterface)
+FortranCInterface_HEADER(
+  FC.h
+  MACRO_NAMESPACE "FC_"
+  SYMBOL_NAMESPACE "FC_"
+  SYMBOLS
+  additional_mod:cleanup_tstp
+  additional_mod:ifirstin
+  additional_mod:restart_init
+  calc_fldstg:calc_fldstg
+  control_tstp_mod:control_tstp
+  init_cond_mod:init_cond
+  init_inputnam_mod:init_inputnam
+  init_map_mod:init_map
+  init_time_mod:init_time
+  init_topo_mod:init_topo
+  mod_input:crunoffcdf
+  mod_input:ieday
+  mod_input:iemon
+  mod_input:ieyear
+  mod_input:irestart
+  mod_input:isday
+  mod_input:ismon
+  mod_input:isyear
+  mod_input:sdayin
+  mod_input:smonin
+  mod_input:syearin
+  )
+
 add_executable(camaflood
   src/main.cpp
   )
 
 target_link_libraries(camaflood PRIVATE libcamaflood)
 
-#target_include_directories(cama_flood PRIVATE include lib/lmoments/include lib/cpp-library)
+target_include_directories(camaflood PRIVATE include lib/lmoments/include lib/cpp-library)
 target_compile_options(camaflood PRIVATE -std=c++11)
 target_compile_options(libcamaflood PRIVATE -cpp)
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
@@ -87,8 +116,10 @@ set_build_type_specifics(libcamaflood)
 #add_git_version(camaflood
 #  FALLBACK_VERSION 1.0.0)
 
-option(WITH_NETCDF "" ON)
-if(WITH_NETCDF)
+include_netcdf_cxx4(camaflood ON v4.3.0)
+
+option(WITH_NETCDF_FORTRAN "" ON)
+if(WITH_NETCDF_FORTRAN)
   find_package(NETCDF_Fortran REQUIRED)
   message(STATUS "NetCDF Fortran include directory: ${NETCDF_FORTRAN_INCLUDE_DIR}")
   message(STATUS "NetCDF Fortran library: ${NETCDF_FORTRAN_LIBRARY}")
@@ -112,7 +143,8 @@ if(PARALLELIZATION)
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
 endif()
 
-#include(lib/settingsnode/settingsnode.cmake)
-#include_settingsnode(cama_flood)
+include(lib/settingsnode/settingsnode.cmake)
+include_settingsnode(camaflood)
+include_yaml_cpp(camaflood ON "yaml-cpp-0.6.2")
 
 add_cpp_tools(camaflood)
