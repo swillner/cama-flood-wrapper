@@ -69,7 +69,7 @@ patch_file(cama-flood/src/control_tstp.F patches/control_tstp.patch)
 
 include(FortranCInterface)
 FortranCInterface_HEADER(
-  FC.h
+  ${CMAKE_CURRENT_BINARY_DIR}/include/FC.h
   MACRO_NAMESPACE "FC_"
   SYMBOL_NAMESPACE "FC_"
   SYMBOLS
@@ -95,6 +95,7 @@ FortranCInterface_HEADER(
   mod_input:smonin
   mod_input:syearin
   )
+FortranCInterface_VERIFY(CXX)
 
 add_executable(camaflood
   src/main.cpp
@@ -102,7 +103,7 @@ add_executable(camaflood
 
 target_link_libraries(camaflood PRIVATE libcamaflood)
 
-target_include_directories(camaflood PRIVATE include lib/lmoments/include lib/cpp-library)
+target_include_directories(camaflood PRIVATE include lib/lmoments/include lib/cpp-library ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_compile_options(camaflood PRIVATE -std=c++11)
 target_compile_options(libcamaflood PRIVATE -cpp)
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
