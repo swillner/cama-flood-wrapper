@@ -117,7 +117,6 @@ void run(const settings::SettingsNode &settings) {
 
   FC_mod_input_ieyear = year + 1; // end FC_year
 
-  FC_additional_mod_ifirstin = 0;
   FC_mod_input_irestart = 2; // just make sure cmaflood thinks it's in spinup
                              // mode (i.e. does not read the snapshot)
   FC_init_map_mod_init_map();
@@ -126,6 +125,7 @@ void run(const settings::SettingsNode &settings) {
 
   if (spinup_count > 0) {
     progressbar::ProgressBar spinup_bar(spinup_count, "Spinup", false, stderr);
+    FC_additional_mod_ifirstin = 0;
     FC_init_time_mod_init_time();
     FC_control_tstp_mod_control_tstp();
     ++spinup_bar;
@@ -139,11 +139,12 @@ void run(const settings::SettingsNode &settings) {
       ++spinup_bar;
     }
     spinup_bar.close();
+
+    FC_additional_mod_cleanup_tstp();
+    FC_additional_mod_restart_init();
   }
 
   progressbar::ProgressBar calc_bar(years_count, "Calc", false, stderr);
-  FC_additional_mod_cleanup_tstp();
-  FC_additional_mod_restart_init();
   FC_additional_mod_ifirstin = 0;
   FC_init_time_mod_init_time();
   FC_mod_input_ieyear = year + years_count; // end FC_year
