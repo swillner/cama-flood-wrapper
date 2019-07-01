@@ -145,9 +145,9 @@ void run(const settings::SettingsNode &settings) {
   }
 
   progressbar::ProgressBar calc_bar(years_count, "Calc", false, stderr);
+  FC_mod_input_ieyear = year + years_count; // end FC_year
   FC_additional_mod_ifirstin = 0;
   FC_init_time_mod_init_time();
-  FC_mod_input_ieyear = year + years_count; // end FC_year
   FC_control_tstp_mod_control_tstp();
   ++calc_bar;
   calc_bar.close();

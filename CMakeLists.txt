@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(cmake/helpers.cmake)
 include(cmake/libraries.cmake)
+add_system_paths()
 
 set_default_build_type(Release)
 
@@ -68,6 +69,7 @@ patch_file(cama-flood/src/control_phy.F patches/control_phy.patch)
 patch_file(cama-flood/src/control_tstp.F patches/control_tstp.patch)
 
 include(FortranCInterface)
+FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(
   ${CMAKE_CURRENT_BINARY_DIR}/include/FC.h
   MACRO_NAMESPACE "FC_"
@@ -95,7 +97,6 @@ FortranCInterface_HEADER(
   mod_input:smonin
   mod_input:syearin
   )
-FortranCInterface_VERIFY(CXX)
 
 add_executable(camaflood
   src/main.cpp
