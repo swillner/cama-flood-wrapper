@@ -32,7 +32,6 @@ add_library(libcamaflood
   cama-flood/src/calc_rivout_kine.F
   cama-flood/src/calc_stonxt.F
   cama-flood/src/calc_watbal.F
-  cama-flood/src/control_inp.F
   cama-flood/src/control_out.F
   cama-flood/src/control_rest.F
   cama-flood/src/create_outbin.F
@@ -65,6 +64,7 @@ function(patch_file FILENAME PATCH)
   target_sources(libcamaflood PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
 endfunction()
 
+patch_file(cama-flood/src/control_inp.F patches/control_inp.patch)
 patch_file(cama-flood/src/control_phy.F patches/control_phy.patch)
 patch_file(cama-flood/src/control_tstp.F patches/control_tstp.patch)
 
@@ -79,6 +79,7 @@ FortranCInterface_HEADER(
   additional_mod:ifirstin
   additional_mod:restart_init
   calc_fldstg:calc_fldstg
+  control_inp_mod:lclose
   control_tstp_mod:control_tstp
   init_cond_mod:init_cond
   init_inputnam_mod:init_inputnam
@@ -86,6 +87,7 @@ FortranCInterface_HEADER(
   init_time_mod:init_time
   init_topo_mod:init_topo
   mod_input:crunoffcdf
+  mod_input:crofcdfvar
   mod_input:ieday
   mod_input:iemon
   mod_input:ieyear
@@ -115,8 +117,8 @@ set_target_properties(libcamaflood PROPERTIES Fortran_FORMAT FREE)
 set_advanced_cpp_warnings(camaflood)
 set_build_type_specifics(camaflood)
 set_build_type_specifics(libcamaflood)
-#add_git_version(camaflood
-#  FALLBACK_VERSION 1.0.0)
+add_git_version(camaflood
+  FALLBACK_VERSION "UNKNOWN")
 
 include_netcdf_cxx4(camaflood ON v4.3.0)
 
