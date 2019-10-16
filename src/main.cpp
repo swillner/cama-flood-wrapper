@@ -22,7 +22,7 @@ void FC_control_tstp_mod_control_tstp();
 void FC_calc_fldstg_calc_fldstg();
 void FC_additional_mod_cleanup_tstp();
 void FC_additional_mod_restart_init();
-extern bool FC_control_inp_mod_lclose;
+extern int FC_control_inp_mod_lclose;
 extern int FC_additional_mod_ifirstin;
 extern char FC_mod_input_crunoffcdf[256];
 extern char FC_mod_input_crofcdfvar[256];
@@ -88,7 +88,7 @@ void run(const settings::SettingsNode& settings) {
     FC_mod_input_sdayin = day;          // start day in runoff file
 
     FC_mod_input_ieyear = start_year + 1;  // end FC_year
-    FC_control_inp_mod_lclose = false;
+    FC_control_inp_mod_lclose = 0;
 
     FC_mod_input_irestart = 2;  // just make sure camaflood thinks it's in spinup
                                 // mode (i.e. does not read the snapshot)
@@ -123,7 +123,7 @@ void run(const settings::SettingsNode& settings) {
         FC_mod_input_syearin = year;
         FC_additional_mod_ifirstin = 0;
         if (year > start_year) {
-            FC_control_inp_mod_lclose = true;
+            FC_control_inp_mod_lclose = 1;
         }
         FC_init_time_mod_init_time();
         FC_control_tstp_mod_control_tstp();
