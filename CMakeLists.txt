@@ -45,7 +45,6 @@ add_library(libcamaflood
   )
 
 find_package(Patch REQUIRED)
-message(STATUS "Patch found: ${Patch_EXECUTABLE}")
 
 function(patch_file FILENAME PATCH)
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
@@ -114,6 +113,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 endif()
 set_target_properties(libcamaflood PROPERTIES Fortran_FORMAT FREE)
 
+set_advanced_options()
 set_advanced_cpp_warnings(camaflood)
 set_build_type_specifics(camaflood)
 set_build_type_specifics(libcamaflood)
@@ -121,13 +121,14 @@ add_git_version(camaflood
   FALLBACK_VERSION "UNKNOWN")
 
 include_netcdf_cxx4(camaflood ON v4.3.0)
+SET_TARGET_PROPERTIES(camaflood PROPERTIES LINK_SEARCH_END_STATIC 1)
 
 option(WITH_NETCDF_FORTRAN "" ON)
 if(WITH_NETCDF_FORTRAN)
   find_package(NETCDF_Fortran REQUIRED)
-  message(STATUS "NetCDF Fortran include directory: ${NETCDF_FORTRAN_INCLUDE_DIR}")
-  message(STATUS "NetCDF Fortran library: ${NETCDF_FORTRAN_LIBRARY}")
-  include_directories(${NETCDF_FORTRAN_INCLUDE_DIR})
+  message(STATUS "NetCDF Fortran include directory: ${NETCDF_Fortran_INCLUDE_DIR}")
+  message(STATUS "NetCDF Fortran library: ${NETCDF_Fortran_LIBRARY}")
+  include_directories(${NETCDF_Fortran_INCLUDE_DIR})
   target_link_libraries(libcamaflood PRIVATE netcdff)
   target_compile_definitions(libcamaflood PRIVATE UseCDF)
 endif()
