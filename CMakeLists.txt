@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.8)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(cmake/helpers.cmake)
@@ -43,6 +43,11 @@ add_library(libcamaflood
   cama-flood/src/init_topo.F
   src/additional.f90
   )
+target_compile_options(libcamaflood PRIVATE -cpp)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+  target_compile_options(libcamaflood PRIVATE -convert little_endian -assume byterecl -heap-arrays)
+endif()
+set_target_properties(libcamaflood PROPERTIES Fortran_FORMAT FREE)
 
 find_package(Patch REQUIRED)
 
@@ -99,29 +104,18 @@ FortranCInterface_HEADER(
   mod_input:syearin
   )
 
-add_executable(camaflood
-  src/main.cpp
-  )
+add_executable(camaflood src/main.cpp)
 
 target_link_libraries(camaflood PRIVATE libcamaflood)
 
 target_include_directories(camaflood PRIVATE include lib/lmoments/include lib/cpp-library ${CMAKE_CURRENT_BINARY_DIR}/include)
-target_compile_options(camaflood PRIVATE -std=c++11)
-target_compile_options(libcamaflood PRIVATE -cpp)
-if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  target_compile_options(libcamaflood PRIVATE -convert little_endian -assume byterecl -heap-arrays)
-endif()
-set_target_properties(libcamaflood PROPERTIES Fortran_FORMAT FREE)
+set_property(TARGET camaflood PROPERTY CXX_STANDARD 11)
 
 set_advanced_options()
 set_advanced_cpp_warnings(camaflood)
 set_build_type_specifics(camaflood)
 set_build_type_specifics(libcamaflood)
-add_git_version(camaflood
-  FALLBACK_VERSION "UNKNOWN")
-
-include_netcdf_cxx4(camaflood ON v4.3.0)
-SET_TARGET_PROPERTIES(camaflood PROPERTIES LINK_SEARCH_END_STATIC 1)
+add_git_version(camaflood)
 
 option(WITH_NETCDF_FORTRAN "" ON)
 if(WITH_NETCDF_FORTRAN)
@@ -150,6 +144,7 @@ endif()
 
 include(lib/settingsnode/settingsnode.cmake)
 include_settingsnode(camaflood)
-include_yaml_cpp(camaflood ON "yaml-cpp-0.6.2")
+include_netcdf_cxx4(camaflood ON v4.3.0)
+include_yaml_cpp(camaflood ON "yaml-cpp-0.6.3")
 
 add_cpp_tools(camaflood)
