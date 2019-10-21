@@ -71,6 +71,7 @@ endfunction()
 patch_file(cama-flood/src/control_inp.F patches/control_inp.patch)
 patch_file(cama-flood/src/control_phy.F patches/control_phy.patch)
 patch_file(cama-flood/src/control_tstp.F patches/control_tstp.patch)
+patch_file(cama-flood/lib/lib_dates.F patches/lib_dates.patch)
 
 include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)

@@ -1,0 +1,9 @@
+@@ -5,7 +5,7 @@ USE MOD_INPUT  ,ONLY: LLEAPYR
+ IMPLICIT NONE
+ 
+ INTEGER(KIND=JPIM)    :: YYYY0, MM0, DD0
+-PARAMETER               (YYYY0=1850)
++PARAMETER               (YYYY0=1650)
+ PARAMETER               (MM0=1)
+ PARAMETER               (DD0=1)
+ 
