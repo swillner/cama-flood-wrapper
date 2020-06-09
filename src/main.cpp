@@ -1,11 +1,14 @@
+#include <glob.h>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <regex>
 #include <stdexcept>
 #include <string>
 #include "FC.h"
+#include "netcdftools.h"
 #include "progressbar.h"
 #include "settingsnode.h"
 #include "settingsnode/inner.h"
@@ -27,15 +30,16 @@ extern int FC_additional_mod_ifirstin;
 extern char FC_mod_input_crunoffcdf[256];
 extern char FC_mod_input_crofcdfvar[256];
 extern int FC_mod_input_irestart;
-extern int FC_mod_input_isyear;   // start year
-extern int FC_mod_input_ismon;    // start month
-extern int FC_mod_input_isday;    // start day
-extern int FC_mod_input_ieyear;   // end year
-extern int FC_mod_input_iemon;    // end month
-extern int FC_mod_input_ieday;    // end day
-extern int FC_mod_input_syearin;  // start year in runoff file
-extern int FC_mod_input_smonin;   // start month in runoff file
-extern int FC_mod_input_sdayin;   // start day in runoff file
+extern bool FC_mod_input_lleapyr;  // consider leap years
+extern int FC_mod_input_isyear;    // start year
+extern int FC_mod_input_ismon;     // start month
+extern int FC_mod_input_isday;     // start day
+extern int FC_mod_input_ieyear;    // end year
+extern int FC_mod_input_iemon;     // end month
+extern int FC_mod_input_ieday;     // end day
+extern int FC_mod_input_syearin;   // start year in runoff file
+extern int FC_mod_input_smonin;    // start month in runoff file
+extern int FC_mod_input_sdayin;    // start day in runoff file
 }
 
 template<class TemplateFunction>
@@ -62,6 +66,30 @@ static std::string fill_template(const std::string& in, const TemplateFunction& 
 
 static inline void set_fortran_string(char dest[256], const std::string& src) { std::strncpy(dest, src.c_str(), 255); }
 
+static void prepare_runoff_file(const std::pair<int, std::string>& file) {
+    set_fortran_string(FC_mod_input_crunoffcdf, file.second);
+    FC_mod_input_syearin = file.first;
+    netCDF::NcFile nc(file.second, netCDF::NcFile::read, netCDF::NcFile::nc4);
+
+    const auto atts = nc.getVar("time").getAtts();
+    const auto at = atts.find("calendar");
+    if (at == std::end(atts)) {
+        FC_mod_input_lleapyr = true;
+    } else {
+        std::string calendar;
+        at->second.getValues(calendar);
+        if (calendar == "standard") {
+            FC_mod_input_lleapyr = true;
+        } else if (calendar == "365_day") {
+            FC_mod_input_lleapyr = false;
+        } else if (calendar == "proleptic_gregorian") {
+            FC_mod_input_lleapyr = true;
+        } else {
+            throw std::runtime_error("Unknown calendar " + calendar);
+        }
+    }
+}
+
 void run(const settings::SettingsNode& settings) {
     if (!settings["verbose"].as<bool>(false)) {
         std::freopen("/dev/null", "w", stdout);
@@ -75,23 +103,59 @@ void run(const settings::SettingsNode& settings) {
     const auto day = 1;
 
     set_fortran_string(FC_mod_input_crofcdfvar, settings["input"]["variable"].as<std::string>());
-    const auto runoff_filename = settings["input"]["file"].as<std::string>();
-    set_fortran_string(FC_mod_input_crunoffcdf, fill_template(runoff_filename, [&](const std::string& key) { return std::to_string(start_year); }));
 
-    FC_mod_input_isyear = start_year;   // start year
-    FC_mod_input_ismon = month;         // start month
-    FC_mod_input_isday = day;           // start day
-    FC_mod_input_iemon = month;         // end month
-    FC_mod_input_ieday = day;           // end day
-    FC_mod_input_syearin = start_year;  // start year in runoff file
-    FC_mod_input_smonin = month;        // start month in runoff file
-    FC_mod_input_sdayin = day;          // start day in runoff file
+    std::vector<std::pair<int, std::string>> runoff_files(end_year - start_year + 1);
+    {
+        const std::regex reg(settings["input"]["match"].as<std::string>());
 
-    FC_mod_input_ieyear = start_year + 1;  // end FC_year
+        glob_t glob_result;
+        memset(&glob_result, 0, sizeof(glob_result));
+
+        const auto files = settings["input"]["files"].as<std::string>();
+        int ret = glob(files.c_str(), GLOB_TILDE, NULL, &glob_result);
+        if (ret != 0) {
+            globfree(&glob_result);
+            throw std::runtime_error("glob() failed");
+        }
+        if (glob_result.gl_pathc == 0) {
+            globfree(&glob_result);
+            throw std::runtime_error("No input file found");
+        }
+
+        std::smatch match;
+        for (size_t i = 0; i < glob_result.gl_pathc; ++i) {
+            const std::string filename = glob_result.gl_pathv[i];
+            if (!std::regex_match(filename, match, reg) || match.size() < 3) {
+                globfree(&glob_result);
+                throw std::runtime_error("File did not match");
+            }
+            const auto file_start_year = std::stoi(match[1]);
+            const auto file_end_year = std::stoi(match[2]);
+            for (int year = std::max(0, file_start_year - start_year); year < std::min(static_cast<int>(runoff_files.size()), file_end_year - start_year + 1);
+                 ++year) {
+                runoff_files[year].first = file_start_year;
+                runoff_files[year].second = filename;
+            }
+        }
+        globfree(&glob_result);
+    }
+
+    FC_mod_input_ismon = month;   // start month
+    FC_mod_input_isday = day;     // start day
+    FC_mod_input_iemon = month;   // end month
+    FC_mod_input_ieday = day;     // end day
+    FC_mod_input_smonin = month;  // start month in runoff file
+    FC_mod_input_sdayin = day;    // start day in runoff file
+
     FC_control_inp_mod_lclose = 0;
 
     FC_mod_input_irestart = 2;  // just make sure camaflood thinks it's in spinup
                                 // mode (i.e. does not read the snapshot)
+
+    prepare_runoff_file(runoff_files[0]);
+    FC_mod_input_isyear = start_year;      // start year
+    FC_mod_input_ieyear = start_year + 1;  // end year
+
     FC_init_map_mod_init_map();
     FC_init_topo_mod_init_topo();
     FC_init_cond_mod_init_cond();
@@ -117,10 +181,9 @@ void run(const settings::SettingsNode& settings) {
     }
 
     for (int year = start_year; year <= end_year; ++year) {
-        set_fortran_string(FC_mod_input_crunoffcdf, fill_template(runoff_filename, [&](const std::string& key) { return std::to_string(year); }));
+        prepare_runoff_file(runoff_files[year - start_year]);
         FC_mod_input_isyear = year;
         FC_mod_input_ieyear = year + 1;
-        FC_mod_input_syearin = year;
         FC_additional_mod_ifirstin = 0;
         if (year > start_year) {
             FC_control_inp_mod_lclose = 1;

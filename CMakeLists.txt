@@ -100,6 +100,7 @@ FortranCInterface_HEADER(
   mod_input:isday
   mod_input:ismon
   mod_input:isyear
+  mod_input:lleapyr
   mod_input:sdayin
   mod_input:smonin
   mod_input:syearin
